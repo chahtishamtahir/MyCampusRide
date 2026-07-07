@@ -189,14 +189,6 @@ const userSchema = new mongoose.Schema({
   customInstallment: {
     type: Number,
     required: false
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
   }
 }, {
   timestamps: true

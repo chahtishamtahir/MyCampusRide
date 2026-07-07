@@ -305,12 +305,8 @@ const updateUser = asyncHandler(async (req, res) => {
     }
   }
 
-  // Build the update object
+  // Build the update object (do NOT include password here to prevent findByIdAndUpdate from writing plaintext passwords)
   const updateData = { name, email, phone, status, feeStatus, assignedRoute, assignedBus, isDisplaced, salary, licenseNumber };
-
-  if (password) {
-    updateData.password = password;
-  }
 
   if (shouldClearDisplaced) {
     updateData.isDisplaced = false;
@@ -348,6 +344,9 @@ const updateUser = asyncHandler(async (req, res) => {
         user[key] = updateData[key];
       }
     });
+    
+    // Explicitly set the plaintext password on the document so pre-save hook can hash it
+    user.password = password;
 
     await user.save();
 

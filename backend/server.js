@@ -37,10 +37,12 @@ if (process.env.FRONTEND_URL) {
   } else {
     allowedOrigins.push(url + '/');
   }
-} else {
-  allowedOrigins.push('http://localhost:3000');
-  allowedOrigins.push('http://localhost:5173');
 }
+// Always allow local development origins
+allowedOrigins.push('http://localhost:3000');
+allowedOrigins.push('http://localhost:3000/');
+allowedOrigins.push('http://localhost:5173');
+allowedOrigins.push('http://localhost:5173/');
 
 // Initialize Socket.IO with CORS configuration
 const io = new Server(server, {

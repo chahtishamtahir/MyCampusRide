@@ -174,7 +174,7 @@ const register = asyncHandler(async (req, res) => {
     success: true,
     message: 'Registration successful! Please check your email to verify your account.',
     data: {
-      user
+      user: user.toJSON()
     }
   });
 });
