@@ -693,6 +693,170 @@ const markFeeDefaulters = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Review fee receipt (approve/reject)
+// @route   PUT /api/users/:id/review-fee-receipt
+// @access  Private/Admin
+const reviewFeeReceipt = asyncHandler(async (req, res) => {
+  const { action, feeStatus: newFeeStatus } = req.body;
+
+  if (!action || !['approve', 'reject'].includes(action)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Action must be "approve" or "reject"'
+    });
+  }
+
+  const student = await User.findById(req.params.id);
+
+  if (!student) {
+    return res.status(404).json({
+      success: false,
+      message: 'Student not found'
+    });
+  }
+
+  if (student.role !== 'student') {
+    return res.status(400).json({
+      success: false,
+      message: 'User is not a student'
+    });
+  }
+
+  if (!student.feeReceipt) {
+    return res.status(400).json({
+      success: false,
+      message: 'No fee receipt has been uploaded by this student'
+    });
+  }
+
+  if (student.feeReceiptStatus !== 'pending_review') {
+    return res.status(400).json({
+      success: false,
+      message: `Fee receipt is not pending review (current status: ${student.feeReceiptStatus})`
+    });
+  }
+
+  const adminName = req.user.name;
+  const adminId = req.user._id;
+  const timestamp = new Date().toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
+  const updateData = {
+    feeUpdatedAt: new Date(),
+    feeUpdatedBy: adminId
+  };
+
+  let feeNoteEntry = '';
+
+  if (action === 'approve') {
+    // Validate feeStatus for approval
+    if (!newFeeStatus || !['paid', 'partially_paid'].includes(newFeeStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Fee status must be "paid" or "partially_paid" when approving'
+      });
+    }
+
+    updateData.feeReceiptStatus = 'approved';
+    updateData.feeStatus = newFeeStatus;
+
+    const statusLabel = newFeeStatus === 'paid' ? 'Paid' : 'Partially Paid';
+    feeNoteEntry = `Fee receipt approved and marked as ${statusLabel} by ${adminName} on ${timestamp}`;
+  } else {
+    // Reject
+    updateData.feeReceiptStatus = 'rejected';
+    feeNoteEntry = `Fee receipt rejected by ${adminName} on ${timestamp}`;
+  }
+
+  // Append to fee notes
+  const existingNotes = student.feeNotes || '';
+  updateData.feeNotes = existingNotes
+    ? `${existingNotes}\n${feeNoteEntry}`
+    : feeNoteEntry;
+
+  const updatedStudent = await User.findByIdAndUpdate(
+    req.params.id,
+    updateData,
+    { new: true, runValidators: true }
+  ).populate('feeUpdatedBy', 'name email');
+
+  // Create notification for student
+  await Notification.createSystemNotification(
+    action === 'approve' ? 'Fee Receipt Approved' : 'Fee Receipt Rejected',
+    action === 'approve'
+      ? `Your fee receipt has been approved. Your fee status is now: ${newFeeStatus === 'paid' ? 'Paid' : 'Partially Paid'}.`
+      : 'Your fee receipt has been rejected. Please upload a valid receipt.',
+    'student',
+    {
+      receiverId: student._id,
+      type: action === 'approve' ? 'success' : 'error',
+      priority: 'high',
+      relatedEntity: { type: 'user', id: student._id }
+    }
+  );
+
+  res.json({
+    success: true,
+    message: `Fee receipt ${action === 'approve' ? 'approved' : 'rejected'} successfully`,
+    data: updatedStudent
+  });
+});
+
+// @desc    Get student's fee receipt file
+// @route   GET /api/users/:id/fee-receipt
+// @access  Private/Admin
+const getFeeReceipt = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
+
+  if (user.role !== 'student') {
+    return res.status(400).json({
+      success: false,
+      message: 'User is not a student'
+    });
+  }
+
+  if (!user.feeReceipt) {
+    return res.status(404).json({
+      success: false,
+      message: 'No fee receipt file found for this student'
+    });
+  }
+
+  const filePath = path.join(__dirname, '..', user.feeReceipt);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({
+      success: false,
+      message: 'Fee receipt file not found on server'
+    });
+  }
+
+  // Determine content type based on file extension
+  const ext = path.extname(filePath).toLowerCase();
+  let contentType = 'application/octet-stream';
+  if (ext === '.pdf') contentType = 'application/pdf';
+  else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+  else if (ext === '.png') contentType = 'image/png';
+  else if (ext === '.webp') contentType = 'image/webp';
+
+  res.setHeader('Content-Type', contentType);
+  res.setHeader('Content-Disposition', `inline; filename="${path.basename(user.feeReceipt)}"`);
+  res.sendFile(filePath);
+});
+
 module.exports = {
   getUsers,
   getUser,
@@ -704,5 +868,7 @@ module.exports = {
   getPendingDrivers,
   getUserStats,
   getDriverLicense,
-  markFeeDefaulters
+  markFeeDefaulters,
+  reviewFeeReceipt,
+  getFeeReceipt
 };

@@ -18,4 +18,6 @@ export const userService = {
   getDriverLicense: (id) => makeApiRequest(() => api.get(`/api/users/${id}/license`, { responseType: 'blob' })),
   getDriverLicenseUrl: (id) => `${API_BASE}/api/users/${id}/license`,
   markFeeDefaulters: () => makeApiRequest(() => api.put('/api/users/action/mark-defaulters')),
+  reviewFeeReceipt: (id, data) => makeApiRequest(() => api.put(`/api/users/${id}/review-fee-receipt`, data)),
+  getFeeReceiptUrl: (id) => `${API_BASE}/api/users/${id}/fee-receipt`,
 };

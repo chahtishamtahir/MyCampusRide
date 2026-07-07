@@ -6,8 +6,9 @@ const fs = require('fs');
 const uploadBaseDir = path.join(__dirname, '..', 'uploads');
 const licensesDir = path.join(uploadBaseDir, 'licenses');
 const profilesDir = path.join(uploadBaseDir, 'profiles');
+const feeReceiptsDir = path.join(uploadBaseDir, 'fee-receipts');
 
-[licensesDir, profilesDir].forEach(dir => {
+[licensesDir, profilesDir, feeReceiptsDir].forEach(dir => {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
@@ -23,6 +24,8 @@ const storage = multer.diskStorage({
             cb(null, licensesDir);
         } else if (file.fieldname === 'profilePicture') {
             cb(null, profilesDir);
+        } else if (file.fieldname === 'feeReceipt') {
+            cb(null, feeReceiptsDir);
         } else {
             cb(new Error('Invalid field name'), false);
         }
@@ -51,6 +54,12 @@ const fileFilter = (req, file, cb) => {
             cb(null, true);
         } else {
             cb(new Error('Only image files (JPEG, PNG, WEBP) are allowed for profile picture'), false);
+        }
+    } else if (file.fieldname === 'feeReceipt') {
+        if (file.mimetype === 'application/pdf' || file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only PDF or image files (JPEG, PNG, WEBP) are allowed for fee receipt'), false);
         }
     } else {
         cb(new Error('Unexpected field'), false);

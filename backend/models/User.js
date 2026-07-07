@@ -95,6 +95,24 @@ const userSchema = new mongoose.Schema({
     default: '',
     required: false
   },
+  // Fee Receipt - Path to uploaded fee receipt file (image or PDF)
+  // Uploaded by student, reviewed by admin (similar to drivingLicenseFile for drivers)
+  feeReceipt: {
+    type: String,
+    required: false
+  },
+  // Fee Receipt Status - Tracks the review status of the uploaded receipt
+  feeReceiptStatus: {
+    type: String,
+    enum: ['not_submitted', 'pending_review', 'approved', 'rejected'],
+    default: 'not_submitted',
+    required: false
+  },
+  // Fee Receipt Submitted At - Timestamp of when student uploaded the receipt
+  feeReceiptSubmittedAt: {
+    type: Date,
+    required: false
+  },
   // Fee Updated At - Timestamp of last fee-related update
   // Automatically set whenever feeStatus, assignedRoute, or assignedBus changes
   feeUpdatedAt: {
@@ -197,6 +215,9 @@ userSchema.pre('validate', function (next) {
     this.feeStatus = undefined;
     this.isDisplaced = undefined;
     this.feeNotes = undefined;
+    this.feeReceipt = undefined;
+    this.feeReceiptStatus = undefined;
+    this.feeReceiptSubmittedAt = undefined;
     this.feeUpdatedAt = undefined;
     this.feeUpdatedBy = undefined;
     this.assignedRoute = undefined;
@@ -213,6 +234,9 @@ userSchema.pre('validate', function (next) {
     this.feeStatus = undefined;
     this.isDisplaced = undefined;
     this.feeNotes = undefined;
+    this.feeReceipt = undefined;
+    this.feeReceiptStatus = undefined;
+    this.feeReceiptSubmittedAt = undefined;
     this.feeUpdatedAt = undefined;
     this.feeUpdatedBy = undefined;
     this.assignedRoute = undefined;

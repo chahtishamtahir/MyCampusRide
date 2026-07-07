@@ -18,4 +18,7 @@ export const authService = {
   selectRoute: (routeId, stopName) => makeApiRequest(() => api.put('/api/auth/select-route', { routeId, stopName })),
   verifyEmail: (token) => makeApiRequest(() => api.get(`/api/auth/verify-email/${token}`), { skipAuthHandler: true }),
   resendVerification: (email) => makeApiRequest(() => api.post('/api/auth/resend-verification', { email }), { skipAuthHandler: true }),
+  uploadFeeReceipt: (formData) => makeApiRequest(() => api.put('/api/auth/upload-fee-receipt', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })),
 };

@@ -13,7 +13,8 @@ const {
   getMe,
   updateProfile,
   changePassword,
-  selectRoute
+  selectRoute,
+  uploadFeeReceipt
 } = require('../controllers/profileController');
 const authMiddleware = require('../middleware/authMiddleware');
 const upload = require('../middleware/fileUpload');
@@ -34,5 +35,6 @@ router.get('/me', authMiddleware, getMe);
 router.put('/profile', authMiddleware, upload.single('profilePicture'), updateProfile);
 router.put('/change-password', authMiddleware, changePassword);
 router.put('/select-route', authMiddleware, selectRoute);
+router.put('/upload-fee-receipt', authMiddleware, upload.single('feeReceipt'), uploadFeeReceipt);
 
 module.exports = router;

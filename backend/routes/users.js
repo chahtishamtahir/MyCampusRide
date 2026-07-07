@@ -11,7 +11,9 @@ const {
   getPendingDrivers,
   getUserStats,
   getDriverLicense,
-  markFeeDefaulters
+  markFeeDefaulters,
+  reviewFeeReceipt,
+  getFeeReceipt
 } = require('../controllers/userController');
 const authMiddleware = require('../middleware/authMiddleware');
 const { adminOnly, adminOrDriver } = require('../middleware/roleMiddleware');
@@ -34,6 +36,8 @@ router.delete('/:id', adminOnly, deleteUser);
 router.put('/:id/approve', adminOnly, approveDriver);
 router.put('/:id/reject', adminOnly, rejectDriver);
 router.get('/:id/license', adminOnly, getDriverLicense);
+router.put('/:id/review-fee-receipt', adminOnly, reviewFeeReceipt);
+router.get('/:id/fee-receipt', adminOnly, getFeeReceipt);
 router.put('/action/mark-defaulters', adminOnly, markFeeDefaulters);
 
 module.exports = router;

@@ -16,6 +16,7 @@ import StudentOverviewView from './components/StudentOverviewView';
 import StudentScheduleView from './components/StudentScheduleView';
 import StudentTrackingView from './components/StudentTrackingView';
 import StudentProfileView from './components/StudentProfileView';
+import StudentFeeSubmissionView from './components/StudentFeeSubmissionView';
 import LiveTrackingView from './components/LiveTrackingView';
 import VirtualTransportCard from './components/VirtualTransportCard';
 import NotificationPanel from '../../components/NotificationPanel';
@@ -114,6 +115,7 @@ const StudentDashboard = () => {
         <React.Fragment key={refreshKey}>
           <Routes>
             <Route index element={<StudentOverviewView />} />
+            <Route path="fee-submission" element={<StudentFeeSubmissionView />} />
             <Route path="schedule" element={<StudentScheduleView />} />
             <Route path="tracking" element={<StudentTrackingView />} />
             <Route path="live-tracking" element={<LiveTrackingView />} />

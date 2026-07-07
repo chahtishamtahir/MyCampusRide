@@ -4,7 +4,7 @@ import {
   Drawer, Avatar, Typography, IconButton, useTheme, useMediaQuery
 } from '@mui/material';
 import {
-  Dashboard, Schedule, LocationOn, Person, QrCode2, Notifications, Logout
+  Dashboard, Schedule, LocationOn, Person, QrCode2, Notifications, Logout, Payment
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -20,6 +20,7 @@ const drawerWidth = 280;
 
 const menuItems = [
   { path: '/student', label: 'Overview', icon: <Dashboard /> },
+  { path: '/student/fee-submission', label: 'Fee Submission', icon: <Payment /> },
   { path: '/student/schedule', label: 'Schedule', icon: <Schedule /> },
   { path: '/student/live-tracking', label: 'Live Tracking', icon: <LocationOn /> },
   { path: '/student/transport-card', label: 'Transport Card', icon: <QrCode2 /> },

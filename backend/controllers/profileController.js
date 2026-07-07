@@ -237,9 +237,58 @@ const selectRoute = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Upload fee receipt (student self-service)
+// @route   PUT /api/auth/upload-fee-receipt
+// @access  Private (Student only)
+const uploadFeeReceipt = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  // Ensure user is a student
+  if (req.user.role !== 'student') {
+    return res.status(403).json({
+      success: false,
+      message: 'Only students can upload fee receipts'
+    });
+  }
+
+  // Check if file was uploaded
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please upload a fee receipt file (PDF or image)'
+    });
+  }
+
+  const feeReceiptPath = 'uploads/fee-receipts/' + req.file.filename;
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    {
+      feeReceipt: feeReceiptPath,
+      feeReceiptStatus: 'pending_review',
+      feeReceiptSubmittedAt: new Date()
+    },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedUser) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to upload fee receipt. Please try again.'
+    });
+  }
+
+  res.json({
+    success: true,
+    message: 'Fee receipt uploaded successfully. It is now pending admin review.',
+    data: updatedUser
+  });
+});
+
 module.exports = {
   getMe,
   updateProfile,
   changePassword,
-  selectRoute
+  selectRoute,
+  uploadFeeReceipt
 };
